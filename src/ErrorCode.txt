@@ -1,0 +1,2 @@
+0   =   minden rendben
+1   =   nem egyezik a mechanika és az elektronika ideje

@@ -1,0 +1,20 @@
+Vin = áramszünet esetén az áram ellátás 
+
+A0 = 1-es szenzor
+A1 = 2-es szenzor
+A2 = 4-es szenzor
+A3 = 8-as szenzor
+A4 = 1-perces érzékelő
+A5 = 1-órás érzékelő
+
+D0/RX = gps serial erkezo adat
+D2 = áramszünet érzékelése
+D3 = vissza forgatas
+D4 = elore forgatas
+D7 = visszafelé forgatjuk a motort
+D8 = forgatjuk a motort
+
+VRTC = RTC elemének pozitiv // ezek mar nem kellenek
+VRTC melletti GND = RTC elemének negatív // ezek mar nem kellenek
+
+
