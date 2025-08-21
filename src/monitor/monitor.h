@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "../sensor.h"
+#include "globals.h"
 
 void checkSensor(sensor *s);
 

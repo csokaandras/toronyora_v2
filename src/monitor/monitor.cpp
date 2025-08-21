@@ -2,7 +2,7 @@
 #include <TimeLib.h>
 
 #include "monitor.h"
-#include "globals.h"
+
 
 void checkSensor(sensor *s)
 {

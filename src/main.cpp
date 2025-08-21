@@ -46,6 +46,9 @@ int currentmin = 0;
 int currentsec = 0; // only for monitoring
 int rotation_counter = 0;
 
+bool forward;
+bool backward;
+
 bool manual_rotate = false;
 bool monitorTime = false;
 bool monitorSensor = false;
@@ -88,7 +91,7 @@ void setup()
   EEPROM.get(eeAdress, fromEEPROMTime);
   savedTime = fromEEPROMTime;
   showedTime = fromEEPROMTime;
-  
+
   int fromEEPROMError;
   EEPROM.get(errEeAdr, fromEEPROMError);
   errCode = fromEEPROMError;
@@ -111,6 +114,8 @@ void setup()
     SET_TIME_START = false;
   }
 
+  forward = false;
+  backward = false;
   digitalWrite(motor_back, LOW);
   digitalWrite(motor_rotate, LOW);
 }
@@ -126,7 +131,10 @@ void loop()
   s3.value = analogRead(HALL_3);
   sMin.value = analogRead(HALL_MIN);
   sHour.value = analogRead(HALL_HOUR);
-  
+
+  int prev_state = sMin.state;
+  checkSensor(&sMin);
+
   man_torate_state = digitalRead(man_rotate);
   man_back_state = digitalRead(man_back);
 
@@ -134,25 +142,23 @@ void loop()
   {
     manual_rotate = true;
 
-    digitalWrite(motor_rotate, HIGH);
-    digitalWrite(motor_back, LOW);
+    forward = true;
+    backward = false;
   }
   else if (man_back_state == LOW)
   {
     manual_rotate = true;
 
-    digitalWrite(motor_rotate, HIGH);
-    digitalWrite(motor_back, HIGH);
+    forward = true;
+    backward = true;
   }
   else if (manual_rotate)
   {
-    int prev_state = sMin.state;
-    checkSensor(&sMin);
 
     if (sMin.state == 0 && prev_state == 1)
     {
-      digitalWrite(motor_back, LOW);
-      digitalWrite(motor_rotate, LOW);
+      forward = false;
+      backward = false;
 
       manual_rotate = false;
     }
@@ -175,11 +181,8 @@ void loop()
     if (currentmin == 0 && (sensor_hour != hour() || sensor_hour != hour() - 12) && sHour.state == 1)
     {
       EEPROM.put(errEeAdr, 1);
-      //Serial.println("Nem egyezik a mechanika és az elektronika ideje! S T O P");
+      // Serial.println("Nem egyezik a mechanika és az elektronika ideje! S T O P");
     }
-
-    int prev_state = sMin.state;
-    checkSensor(&sMin);
 
     if (sMin.state == 0 && prev_state == 1)
     {
@@ -195,8 +198,8 @@ void loop()
       // a 12-esen kiadjuk hogy LOW
       // forgatja előre amíg nem lesz 0 a diffInMin
       rotation_counter++;
-      digitalWrite(motor_rotate, HIGH);
-      digitalWrite(motor_back, LOW);
+      forward = true;
+      backward = false;
 
       // logSensor("min", &sMin);
     }
@@ -207,17 +210,14 @@ void loop()
       // a 13-ason kiadjuk hogy HIGH
       // forgatja hátra (meghúzza a relét és ezzel visszafelé forgatja) amíg nem lesz 0 a diffInMin
       rotation_counter++;
-      digitalWrite(motor_back, HIGH);
-      digitalWrite(motor_rotate, HIGH);
-
+      forward = true;
+      backward = true;
       // logSensor("min", &sMin);
     }
-    else if (diffInMin == 0)
+    else
     {
-      turning = false;
-
-      digitalWrite(motor_rotate, LOW);
-      digitalWrite(motor_back, LOW);
+      forward = false;
+      backward = false;
     }
 
     diffInMin = calculateDifference(currentTime, showedTime);
@@ -254,6 +254,10 @@ void loop()
     Serial.print(sensor_hour);
     Serial.println();
   }
+
+  digitalWrite(motor_rotate, forward ? HIGH : LOW);
+  digitalWrite(motor_back, backward ? HIGH : LOW);
+      
 
   handleSerialCommand();
 }

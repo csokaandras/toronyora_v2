@@ -18,7 +18,7 @@ int calculateDifference(time_t from, time_t to)
     from_tm.Month = month(to);
     from_tm.Year = year(to);
 
-    if (day(from) != day(to))
+    if (abs( day(to) - day(from) ) == 1)
     {
       from_tm.Day = day(from);
     }
