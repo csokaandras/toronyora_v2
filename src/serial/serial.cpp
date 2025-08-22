@@ -118,8 +118,7 @@ void handleSerialCommand()
             Serial.println("VT100   kezdőlap megjelenítése");
             Serial.println("-h      segítség kiírása");
             Serial.println("-m      idő folyamatos megjelenítésének bekapcsolása, megállításához nyomja meg az ESC gombot");
-            Serial.println("-t      aktuális idő beállítása");
-            Serial.println("-d      aktuális dátum beállítása");
+            Serial.println("-t      az aktuális a mutatott idő");
             Serial.println("-s      érzékelők állapotának megjelenítése, megállításához nyomja meg az ESC gombot");
             Serial.println("-e      error code kiirasa");
             // Serial.println("-r-     motor léptetése előre (Ha nincs érték akkor 1-el)");
@@ -140,22 +139,11 @@ void handleSerialCommand()
             typed = "";
         }
 
-        if (typed == "-d")
-        {
-            Serial.println();
-            Serial.println("Aktuális dátum beállítása");
-            Serial.println("Elfogadáshoz nyomja meg a TAB gombot");
-            Serial.println("Kérem ebben a formátumban adja meg ÉÉÉÉ/HH/NN");
-            prevTyped = typed;
-            typed = "";
-        }
-
         if (typed == "-t")
         {
             Serial.println();
-            Serial.println("Aktuális idő beállítása");
-            Serial.println("Elfogadáshoz nyomja meg a TAB gombot");
-            Serial.println("Kérem ebben a formátumban adja meg óó:pp:mm");
+            Serial.println("Az aktuális a mutatott idő");
+            showedTime = currentTime;
             prevTyped = typed;
             typed = "";
         }

@@ -9,7 +9,7 @@
 static const int RXPin = D0, TXPin = D1;
 
 SoftwareSerial SerialGPS = SoftwareSerial(RXPin, TXPin); // receive on pin 10
-int offset = 2;
+int offset = 1;
 TinyGPS gps;
 
 #define HALL_0 A0
@@ -62,7 +62,7 @@ sensor sMin = {0, 0, 350, 700, 1000, 0};
 sensor sHour = {0, 0, 200, 700, 1000, 0};
 
 int eeAdress = 1;
-int errEeAdr = 2;
+int errEeAdr = 9;
 
 int errCode = 0;
 
@@ -177,11 +177,10 @@ void loop()
     syncGpsToRtc();
 
     sensor_hour = calculateHour(&s0, &s1, &s2, &s3);
-
+    
     if (currentmin == 0 && (sensor_hour != hour() || sensor_hour != hour() - 12) && sHour.state == 1)
     {
       EEPROM.put(errEeAdr, 1);
-      // Serial.println("Nem egyezik a mechanika és az elektronika ideje! S T O P");
     }
 
     if (sMin.state == 0 && prev_state == 1)
@@ -200,8 +199,6 @@ void loop()
       rotation_counter++;
       forward = true;
       backward = false;
-
-      // logSensor("min", &sMin);
     }
     else if (diffInMin < 0)
     {
@@ -212,7 +209,6 @@ void loop()
       rotation_counter++;
       forward = true;
       backward = true;
-      // logSensor("min", &sMin);
     }
     else
     {
@@ -258,6 +254,11 @@ void loop()
   digitalWrite(motor_rotate, forward ? HIGH : LOW);
   digitalWrite(motor_back, backward ? HIGH : LOW);
       
+  if (currentmin != minute())
+  {
+    currentmin = minute();
+  }
+  
 
   handleSerialCommand();
 }

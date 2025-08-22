@@ -1,6 +1,5 @@
 #include "../globals.h"
 #include "time.h"
-// #include "../monitor/monitor.h"
 
 bool frissGps = false;
 
@@ -8,40 +7,19 @@ int calculateDifference(time_t from, time_t to)
 {
   if (!turning || !manual_rotate)
   {
-    // atalakitjuk ugyanarra a naptari napra
-    tmElements_t from_tm;
-
-    from_tm.Second = second(from);
-    from_tm.Minute = minute(from);
-    from_tm.Hour = hour(from);
-    from_tm.Day = day(to);
-    from_tm.Month = month(to);
-    from_tm.Year = year(to);
-
-    if (abs( day(to) - day(from) ) == 1)
-    {
-      from_tm.Day = day(from);
-    }
-
-    // from = makeTime(from_tm);
-    to = to-second(to);
-    from = from-second(from);
-
-    int diffInSec = to - from;
-
-    // showTime(from, "from");
-    // showTime(to, "to  ");
-    
-    int diff = diffInSec / 60 * -1;
-    
+    int diff = ( from - to ) / 60;
+    diff = diff % 720;
     /*
-    if (second() % 2 == 0)
+    if (diff > 360)
     {
-      Serial.println(diffInSec);
-      Serial.println(diff);
+      diff = ( diff - 360 );
+    }
+    if (diff < -360)
+    {
+      diff = ( diff + 360 );
     }
     */
-    
+
     return diff;
   }
 
@@ -77,7 +55,7 @@ void onMin()
 
 void saveTime()
 {
-  time_t saveTime = currentTime;
+  time_t saveTime = showedTime;
   EEPROM.put(eeAdress, saveTime);
 }
 
@@ -107,7 +85,6 @@ void getGpsTime()
         tm.Year = CalendarYrToTm(Year); // konvertál 1970-alapú évvé
 
         gpsTime = makeTime(tm); // konvertál time_t típusúvá
-        // diffInMin = calculateDifference(currentTime, showedTime);
       }
     }
   }
@@ -168,29 +145,10 @@ void isSummerTime(time_t t)
 
   time_t dstEnd = makeTime(octLastSunday);
 
-  // Most már egyszerű a vizsgálat:
   if (t >= dstStart && t < dstEnd)
   {
     offset = 2; // CEST time zone
-  }
-}
-
-void SumWinTimeChange()
-{
-  // teli idore
-  if (month() == 10 && day() >= 24)
-  {
-    if (weekday() == 1 && hour() == 3)
-    {
-      offset = 1;
-    }
-  }
-
-  if (month() == 3 && day() >= 24)
-  {
-    if (weekday() == 1 && hour() == 2)
-    {
-      offset = 2;
-    }
+  }else{
+    offset = 1;
   }
 }
