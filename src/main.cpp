@@ -19,8 +19,8 @@ TinyGPS gps;
 #define HALL_MIN A4
 #define HALL_HOUR A5
 
-int man_rotate = PIN_D4;
-int man_back = PIN_D3;
+int man_rotate = PIN_D9;
+int man_back = PIN_D10;
 
 int motor_rotate = PIN_D8;
 int motor_back = PIN_D7;
@@ -30,6 +30,7 @@ bool SET_TIME_START = false; // this need allways be false when last patch is up
 // --------------------------------- IMPORTANT ---------------------------------
 
 const byte powerLossPin = PIN_D2;
+const byte onMinPin = PIN_D3;
 
 time_t savedTime;
 time_t showedTime;
@@ -45,6 +46,7 @@ int prevdiff = 0;
 int currentmin = 0;
 int currentsec = 0; // only for monitoring
 int rotation_counter = 0;
+int prev_state = 0;
 
 bool forward;
 bool backward;
@@ -52,13 +54,13 @@ bool backward;
 bool manual_rotate = false;
 bool monitorTime = false;
 bool monitorSensor = false;
-bool turning = false;
+bool turned = false;
 
 sensor s0 = {1, 10, 200, 700, 1000, 0};
 sensor s1 = {2, 10, 200, 700, 1000, 0};
 sensor s2 = {4, 10, 200, 700, 1000, 0};
 sensor s3 = {8, 10, 200, 700, 1000, 0};
-sensor sMin = {0, 0, 350, 700, 1000, 0};
+sensor sMin = {0, 0, 430, 700, 1000, 0};
 sensor sHour = {0, 0, 200, 700, 1000, 0};
 
 int eeAdress = 1;
@@ -99,6 +101,7 @@ void setup()
   // save time to EEPROM
   pinMode(powerLossPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(powerLossPin), saveTime, RISING);
+  attachInterrupt(digitalPinToInterrupt(onMinPin), minInterrupt, RISING);
 
   isSummerTime(now());
   getGpsTime();
@@ -124,7 +127,9 @@ void loop()
 {
   currentTime = now();
   int sensor_hour = 0;
-
+  
+  prev_state = sMin.state;
+  
   s0.value = analogRead(HALL_0);
   s1.value = analogRead(HALL_1);
   s2.value = analogRead(HALL_2);
@@ -132,7 +137,6 @@ void loop()
   sMin.value = analogRead(HALL_MIN);
   sHour.value = analogRead(HALL_HOUR);
 
-  int prev_state = sMin.state;
   checkSensor(&sMin);
 
   man_torate_state = digitalRead(man_rotate);
@@ -155,7 +159,7 @@ void loop()
   else if (manual_rotate)
   {
 
-    if (sMin.state == 0 && prev_state == 1)
+    if (sMin.state == 0 && prev_state == 1) // es ezt is turned re kell cserelni
     {
       forward = false;
       backward = false;
@@ -183,8 +187,9 @@ void loop()
       EEPROM.put(errEeAdr, 1);
     }
 
-    if (sMin.state == 0 && prev_state == 1)
+    if (sMin.state == 0 && prev_state == 1) // ezt kell turned re cserelni
     {
+      turned = false;
       onMin();
       diffInMin = calculateDifference(currentTime, showedTime);
     }
@@ -217,6 +222,12 @@ void loop()
     }
 
     diffInMin = calculateDifference(currentTime, showedTime);
+  }
+
+  if(errCode != 0)
+  {
+    forward = false;
+    backward = false;
   }
 
   // monitoring
@@ -261,4 +272,9 @@ void loop()
   
 
   handleSerialCommand();
+}
+
+void minInterrupt()
+{
+  turned = true;
 }

@@ -9,8 +9,9 @@ A5 = 1-órás érzékelő
 
 D0/RX = gps serial erkezo adat
 D2 = áramszünet érzékelése
-D3 = vissza forgatas
-D4 = elore forgatas
+D3 = fordulas konduktiv erzekelo interruptja
+D9 = vissza forgatas
+D10 = elore forgatas
 D7 = visszafelé forgatjuk a motort
 D8 = forgatjuk a motort
 
